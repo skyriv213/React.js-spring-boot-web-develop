@@ -54,6 +54,37 @@ public class TodoController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @GetMapping
+    public ResponseEntity<?> retrieveTodoList(){
+        //createTodo 메서드에서 사용했던 임시 유저 아이디 받아오기
+        String temporaryUserId = "temporary-user";
+        // 1. service의 retrieve 메서드에 해당 임시 아이디 넣어서 해당 아이디의 Todo리스트 가져오기
+        List<TodoEntity> entities = service.retrieve(temporaryUserId);
+        // 2. 가져온 TodoEntity리스트를 TodoDTO 객체로 스트림을 사용해서 변환. 이때 DTO 리스트로 변환
+        List<TodoDTO> dtos = entities.stream().map(TodoDTO::new).collect(Collectors.toList());
+        // 3. ResponseDTO의 데이터 형식을 TodoDTO로 선언하여 builder 패턴 선언. 이때 data 항목에는 앞에서 만든 dtos를 넣어서 초기화해준다.
+        ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().data(dtos).build();
+        // 4. ResponseDTO를 body에 넣고 반환
+        return ResponseEntity.ok().body(response);
+    };
 
+    /***
+     *
+     * @param dto
+     * @return dto responseEntity
+     */
+    @PutMapping
+    public ResponseEntity<?> updateTodo(@RequestBody TodoDTO dto) {
+        String temporaryUserId = "temporary-user";
+        // dto를 entity로 변환
+        TodoEntity entity = TodoDTO.toEntity(dto);
+        entity.setUserId(temporaryUserId);
+        List<TodoEntity> entities = service.update(entity);
+        // entities를 dto로 변환
+        List<TodoDTO> dtos = entities.stream().map(TodoDTO::new).collect(Collectors.toList());
+        // responseDTO에 dto를 넣고 build 패턴
+        ResponseDTO<TodoDTO> response = ResponseDTO.<TodoDTO>builder().data(dtos).build();
+        return ResponseEntity.ok().body(response);
+    }
 
 }
