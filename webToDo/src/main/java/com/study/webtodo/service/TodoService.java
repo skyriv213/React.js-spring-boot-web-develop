@@ -15,7 +15,8 @@ public class TodoService {
 
     @Autowired
     private TodoRepository repository;
-    public String testService(){
+
+    public String testService() {
         TodoEntity entity = TodoEntity.builder().title("first todo item").build();
         repository.save(entity);
         TodoEntity saveEntity = repository.findById(entity.getId()).get();
@@ -54,12 +55,24 @@ public class TodoService {
         // entity id를 이용해 TodoEntity를 가져옴. 존재하지 않는 엔티티는 업데이트 불가
         Optional<TodoEntity> original = repository.findById(entity.getId());
         // orginal을 새로 업데이트
-        original.ifPresent(todo->{
+        original.ifPresent(todo -> {
             todo.setTitle(entity.getTitle());
             todo.setDone(entity.isDone());
             repository.save(todo);
         });
         return retrieve(entity.getUserId());
+    }
+
+    public List<TodoEntity> delete(final TodoEntity entity) {
+        validate(entity);
+        try {
+            repository.delete(entity);
+        } catch (Exception e) {
+            log.error("error deleting entity", entity.getId(), e);
+            throw new RuntimeException("error deleting entity" + entity.getId());
+        }
+        return retrieve(entity.getUserId());
+
     }
 
     /***
